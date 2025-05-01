@@ -1,0 +1,16 @@
+{
+  "name": "perc-e-tools",
+  "version": "1.0.0",
+  "description": "PERC-E Tools website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0"
+  }
+}

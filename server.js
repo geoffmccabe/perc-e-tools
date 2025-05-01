@@ -1,9 +1,10 @@
 /*
-  Purpose: Set up a Node.js/Express backend for the PERC-E Tools website, connecting to MongoDB and providing a basic API endpoint to fetch wallet data. This is Stage 1, renamed from "Agent PERC-E" to "PERC-E Tools" with updated database name and comments.
-  Why: Enables data storage and API access for wallet/user metrics, preparing for integration with Magic Eden and QuickNode APIs in later stages. Aligns with your app’s backend infrastructure.
+  Purpose: Set up a Node.js/Express backend for the PERC-E Tools website, connecting to MongoDB Atlas and providing a basic API endpoint to fetch wallet data. This is Stage 1 of the PERC-E Tools project, designed to store and manage wallet/user metrics.
+  Why: Enables data storage and API access for wallet/user metrics, preparing for integration with Magic Eden and QuickNode APIs in later stages. Uses MongoDB Atlas for cloud hosting, aligning with your provided connection string.
   Changes:
-  - Renamed MongoDB database from 'agent-perc-e' to 'perc-e-tools'.
-  - Updated comments to reference "PERC-E Tools".
+  - Set mongoURI to your MongoDB Atlas connection string with database 'perc-e-tools', auto-created when data is written.
+  - Updated comments for clarity and to reflect PERC-E Tools branding.
+  - Ensured all schemas and API endpoints remain consistent with Stage 1 requirements.
 */
 
 const express = require('express');
@@ -17,14 +18,15 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/perc-e-tools', {
+// MongoDB Atlas connection
+const mongoURI = 'mongodb+srv://geoffmccabe:pWNguHu9qU49WV5N@cluster0.lqyofdn.mongodb.net/perc-e-tools?retryWrites=true&w=majority&appName=Cluster0';
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
-  console.log('Connected to MongoDB');
+  console.log('Connected to MongoDB Atlas');
 }).catch(err => {
-  console.error('MongoDB connection error:', err);
+  console.error('MongoDB Atlas connection error:', err);
 });
 
 // Wallet schema

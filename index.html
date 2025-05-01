@@ -1,0 +1,73 @@
+<!-- 
+  Purpose: Create the bare-bones HTML structure for the PERC-E Tools website, displaying a wallet list table and user metrics section, using the Poppins font for all text. This is Stage 1, renamed from "Agent PERC-E" to "PERC-E Tools" with updated title and references.
+  Why: Provides a simple interface with consistent typography to visualize wallet and user data, aligning with your request for Poppins font and new project name while preparing for future stages. The structure remains minimal, reusing your app’s setup approach.
+  Changes:
+  - Added Google Fonts CDN link for Poppins in <head>.
+  - Added CSS in <style> to apply Poppins globally with fallback to sans-serif.
+  - Renamed all instances of "Agent PERC-E" to "PERC-E Tools" (title, headings).
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PERC-E Tools</title>
+  <!-- Added: Import Poppins font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Added: Apply Poppins font globally */
+    body, h1, h2, h3, p, table, input, button {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <h1>PERC-E Tools Dashboard</h1>
+  
+  <!-- Wallet List Table -->
+  <h2>Wallet List</h2>
+  <table id="wallet-table">
+    <thead>
+      <tr>
+        <th>Wallet Address</th>
+        <th>Number of PERCs</th>
+        <th>PERCs by Tier</th>
+        <th>Purchased</th>
+        <th>Sold</th>
+        <th>Transferred</th>
+        <th>Unique Wallets Transferred To</th>
+      </tr>
+    </thead>
+    <tbody id="wallet-table-body">
+      <!-- Populated by script.js -->
+    </tbody>
+  </table>
+
+  <!-- User Metrics Dashboard -->
+  <h2>User Metrics</h2>
+  <div id="user-metrics">
+    <h3>NFT (Solana)</h3>
+    <p id="nft-data">Select a wallet to view NFT data</p>
+    <h3>Solana Crypto</h3>
+    <p id="crypto-data">Select a wallet to view crypto data</p>
+    <h3>EVM (Bridged)</h3>
+    <p id="evm-data">Select a wallet to view EVM data</p>
+    <h3>Personal</h3>
+    <p id="personal-data">Select a wallet to view personal data</p>
+  </div>
+
+  <!-- Admin Panel -->
+  <h2>Admin Panel</h2>
+  <div id="admin-panel">
+    <input type="text" id="wallet-input" placeholder="Enter wallet address or @TelegramID">
+    <button onclick="flagWallet()">Flag Wallet</button>
+    <button onclick="assignSocialMedia()">Assign Social Media</button>
+    <button onclick="downloadData()">Download Data</button>
+    <button onclick="refreshData()">Refresh Data</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

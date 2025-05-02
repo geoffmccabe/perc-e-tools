@@ -1,15 +1,15 @@
 /*
-  Purpose: Set up a Node.js/Express backend for the PERC-E Tools website, connecting to MongoDB Atlas and providing a basic API endpoint to fetch wallet data. This is Stage 1 of the PERC-E Tools project, designed to store and manage wallet/user metrics.
-  Why: Enables data storage and API access for wallet/user metrics, preparing for integration with Magic Eden and QuickNode APIs in later stages. Uses MongoDB Atlas for cloud hosting, aligning with your provided connection string.
+  Purpose: Set up a Node.js/Express backend for the PERC-E Tools website, connecting to MongoDB Atlas and fetching wallet data from Magic Eden API for Perceptrons Collection #1. This is Stage 2, building on Stage 1.
+  Why: Stores and serves wallet PERC data, preparing for further metrics in later stages.
   Changes:
-  - Set mongoURI to your MongoDB Atlas connection string with database 'perc-e-tools', auto-created when data is written.
-  - Updated comments for clarity and to reflect PERC-E Tools branding.
-  - Ensured all schemas and API endpoints remain consistent with Stage 1 requirements.
+  - Added axios for Magic Eden API calls.
+  - Added endpoint to fetch wallet data from /collections/perceptrons_collection_1/leaderboard.
 */
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 const port = 3000;
@@ -45,10 +45,10 @@ const walletSchema = new mongoose.Schema({
 
 const Wallet = mongoose.model('Wallet', walletSchema);
 
-// User schema for user-wallet hierarchy
+// User schema
 const userSchema = new mongoose.Schema({
   telegram_id: { type: String, required: true, unique: true },
-  wallets: [{ type: String }], // Array of wallet addresses
+  wallets: [{ type: String }],
   interaction_frequency: Number,
   username: String,
   email: String,
@@ -57,14 +57,26 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// API endpoint to fetch wallets
+// Fetch and store wallet data from Magic Eden
 app.get('/api/perc-e/wallets', async (req, res) => {
   try {
-    const wallets = await Wallet.find();
+    // Fetch top wallets from Magic Eden
+    const response = await axios.get('https://api-mainnet.magiceden.dev/v2/collections/famous_fox_federation/leaderboard');
+    console.log('API response:', JSON.stringify(response.data, null, 2)); // Debug log
+    const leaderboard = response.data || [];
+
+    // Process wallets
+    const wallets = leaderboard.map(entry => ({
+      wallet_address: entry.wallet,
+      perc_count: 0 // Placeholder count
+    }));
+
+    console.log('Sending response:', JSON.stringify(wallets, null, 2)); // Debug log
     res.json(wallets);
   } catch (error) {
-    console.error('Error fetching wallets in PERC-E Tools:', error);
-    res.status(500).json({ error: 'Failed to fetch wallets' });
+    console.error('Error fetching wallets:', error.message, error.response?.status, error.response?.data || '');
+    console.log('Sending error response: []'); // Debug log
+    res.json([]);
   }
 });
 

@@ -1,67 +1,426 @@
-<!-- 
-      Purpose: Create the bare-bones HTML structure for the PERC-E Tools website, displaying a wallet list table and user metrics section, using the Poppins font for all text. This is Stage 1, with “PERC-E Tools” branding.
-      Why: Provides a simple interface with consistent typography to visualize wallet and user data, aligning with your request for Poppins font and project name while preparing for future stages.
-    -->
-    
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>PERC-E Tools</title>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-      <style>
-        body, h1, h2, h3, p, table, input, button {
-          font-family: 'Poppins', sans-serif;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>PERC-E Tools Dashboard</h1>
-      
-      <!-- Wallet List Table -->
-      <h2>Wallet List</h2>
-      <table id="wallet-table">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PERC-E Tools Dashboard</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script src="/node_modules/axios/dist/axios.min.js"></script>
+  <style>
+    body, h1, h2, h3, p, table, input, button {
+      font-family: 'Poppins', sans-serif;
+    }
+    .version {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+    .tabs {
+      margin: 10px 0;
+      display: inline-block;
+    }
+    .api-selector {
+      display: inline-block;
+      margin-left: 20px;
+    }
+    .tab-button, .refresh-button {
+      padding: 10px 20px;
+      margin-right: 5px;
+      cursor: pointer;
+      background-color: #f2f2f2;
+      border: none;
+      border-radius: 5px;
+    }
+    .tab-button.active {
+      background-color: #007bff;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .processing-info {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .processing-info strong {
+      font-weight: bold;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal img {
+      max-height: 90vh;
+      max-width: 90vw;
+      object-fit: contain;
+    }
+    .metadata-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-height: 95vh;
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .metadata-modal-content {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .metadata-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #333;
+    }
+    .metadata-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .metadata-table th, .metadata-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .metadata-table th {
+      font-weight: bold;
+      width: 33.33%;
+      background-color: #f2f2f2;
+    }
+    .metadata-table td {
+      width: 66.67%;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 3px;
+      text-align: left;
+      word-break: break-all;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+    .burned {
+      background-color: #e5dac6;
+    }
+    .collection-img {
+      max-height: 100px;
+      width: auto;
+      cursor: pointer;
+    }
+    .metadata-preview {
+      cursor: pointer;
+      display: inline-block;
+      white-space: pre-wrap;
+      line-height: 1.2em;
+    }
+    #collection-table th:nth-child(1), #collection-table td:nth-child(1) { width: 120px; }
+    #collection-table th:nth-child(2), #collection-table td:nth-child(2) { width: 150px; }
+    #collection-table th:nth-child(3), #collection-table td:nth-child(3) { width: 150px; }
+    #collection-table th:nth-child(5), #collection-table td:nth-child(5) { width: 150px; }
+    #collection-table th:nth-child(6), #collection-table td:nth-child(6) { width: 150px; }
+    #collection-table th:nth-child(7), #collection-table td:nth-child(7) { width: 100px; }
+    #collection-table th:nth-child(4), #collection-table td:nth-child(4) { width: auto; }
+    .wallet-row {
+      border-bottom: 3px solid #333;
+    }
+    .wallet-nft-row td {
+      border-bottom: 1px solid #ddd;
+    }
+    .wallet-img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    #wallet-table th:nth-child(1), #wallet-table td:nth-child(1) { width: 150px; }
+    #wallet-table th:nth-child(2), #wallet-table td:nth-child(2) { width: 60px; text-align: center; }
+    #wallet-table th:nth-child(3), #wallet-table td:nth-child(3) { width: auto; }
+    #wallet-table th:nth-child(4), #wallet-table td:nth-child(4) { width: 60px; text-align: center; }
+    #wallet-table th:nth-child(5), #wallet-table td:nth-child(5) { width: 60px; text-align: center; }
+    #wallet-table th:nth-child(6), #wallet-table th:nth-child(7), #wallet-table th:nth-child(8),
+    #wallet-table th:nth-child(9), #wallet-table th:nth-child(10), #wallet-table th:nth-child(11),
+    #wallet-table td:nth-child(6), #wallet-table td:nth-child(7), #wallet-table td:nth-child(8),
+    #wallet-table td:nth-child(9), #wallet-table td:nth-child(10), #wallet-table td:nth-child(11) { width: 70px; text-align: center; }
+    .number-header {
+      white-space: pre-line;
+    }
+    h2, h3 {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+    .analysis-section {
+      margin-bottom: 20px;
+    }
+    .analysis-section h3 {
+      margin-bottom: 10px;
+    }
+    .analysis-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .analysis-table th, .analysis-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .analysis-table th {
+      background-color: #f2f2f2;
+    }
+    #top-wallets-table th:nth-child(1), #top-wallets-table td:nth-child(1),
+    #top-forgers-table th:nth-child(1), #top-forgers-table td:nth-child(1) { width: 60px; text-align: center; }
+    #top-wallets-table th:nth-child(3), #top-wallets-table td:nth-child(3),
+    #top-forgers-table th:nth-child(3), #top-forgers-table td:nth-child(3) { width: 120px; text-align: right; }
+    #tier-count-table th:nth-child(1), #tier-count-table td:nth-child(1) { width: 100px; text-align: center; }
+    #tier-count-table th:nth-child(2), #tier-count-table td:nth-child(2) { width: 120px; text-align: right; }
+    #tier-count-table th:nth-child(3), #tier-count-table td:nth-child(3) { width: 120px; text-align: right; }
+    .pagination {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .pagination button {
+      padding: 5px 10px;
+      margin: 0 5px;
+      cursor: pointer;
+      border: none;
+      background-color: #808080 !important;
+      color: white;
+      border-radius: 4px;
+    }
+    .pagination button:disabled {
+      background-color: #ccc !important;
+      cursor: not-allowed;
+    }
+    #raw-data-table th:nth-child(1), #raw-data-table td:nth-child(1) { width: 80px; }
+    #raw-data-table th:nth-child(2), #raw-data-table td:nth-child(2) { width: 150px; }
+    #raw-data-table th:nth-child(3), #raw-data-table td:nth-child(3) { width: 150px; }
+    #raw-data-table th:nth-child(4), #raw-data-table td:nth-child(4) { width: auto; }
+    #raw-data-table th:nth-child(5), #raw-data-table td:nth-child(5) { width: 150px; }
+    #raw-data-table th:nth-child(6), #raw-data-table td:nth-child(6) { width: 150px; }
+    #raw-data-table th:nth-child(7), #raw-data-table td:nth-child(7) { width: 100px; }
+    #raw-data-table th:nth-child(8), #raw-data-table td:nth-child(8) { width: auto; }
+    .atlas-image {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="version">v78</div>
+  <h1>PERC-E Tools Dashboard</h1>
+  <div class="tabs">
+    <button class="tab-button active" onclick="switchTab('collection')">Collection Data</button>
+    <button class="tab-button" onclick="switchTab('wallet')">Wallet Data</button>
+    <button class="tab-button" onclick="switchTab('analysis')">Analysis</button>
+    <button class="tab-button" onclick="switchTab('raw-data')">Raw Data</button>
+    <button class="tab-button" onclick="switchTab('atlas')">Texture Atlas</button>
+  </div>
+  <div class="api-selector">
+    <label>API:</label>
+    <input type="radio" name="api" value="helius" checked> HELIUS
+    <input type="radio" name="api" value="quicknode" disabled> QUICKNODE
+    <input type="radio" name="api" value="magiceden" disabled> MAGICEDEN
+    <button class="refresh-button" onclick="refreshData()">Refresh</button>
+  </div>
+  <div class="processing-info" id="processedStats">
+    <strong>Processed:</strong> Wallets: <span id="wallet-count">0</span> Percs: <span id="perc-count">0</span> Transactions: <span id="transaction-count">0</span>
+  </div>
+
+  <div id="collection" class="tab-content active">
+    <h2>Collection Data</h2>
+    <table class="metadata-table">
+      <tr><th>Collection Name</th><td id="collection-name">N/A</td></tr>
+      <tr><th>Collection Address</th><td id="collection-address">N/A</td></tr>
+      <tr><th>Symbol</th><td id="collection-symbol">N/A</td></tr>
+      <tr><th>Description</th><td id="collection-description">N/A</td></tr>
+      <tr><th>Seller Fee Basis Points</th><td id="collection-fee">N/A</td></tr>
+    </table>
+    <h3>NFT DATA</h3>
+    <div class="pagination">
+      <button onclick="changePage(-100)">-100</button>
+      <button onclick="changePage(-10)">-10</button>
+      <button onclick="changePage(-1)">-</button>
+      <span id="page-info">Page 1</span>
+      <button onclick="changePage(1)">+</button>
+      <button onclick="changePage(10)">+10</button>
+      <button onclick="changePage(100)">+100</button>
+    </div>
+    <table id="collection-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Name</th>
+          <th>NFT ID</th>
+          <th>Traits</th>
+          <th>JSON URI</th>
+          <th>Owner</th>
+          <th>Burned</th>
+        </tr>
+      </thead>
+      <tbody id="collection-table-body"></tbody>
+    </table>
+    <p id="collection-count">Total NFTs: 0</p>
+  </div>
+
+  <div id="wallet" class="tab-content">
+    <h2>Wallet Data</h2>
+    <table id="wallet-table">
+      <thead>
+        <tr>
+          <th>Wallet Address</th>
+          <th class="number-header">Number of NFTs</th>
+          <th>Traits</th>
+          <th>Image</th>
+          <th>TIER</th>
+          <th>Purchased</th>
+          <th>First Purchase</th>
+          <th>Avg Monthly</th>
+          <th>Sold</th>
+          <th>Collections</th>
+          <th>Forgings</th>
+        </tr>
+      </thead>
+      <tbody id="wallet-table-body"></tbody>
+    </table>
+    <p id="wallet-count">Total Wallets: 0, Total PERCs: 0</p>
+  </div>
+
+  <div id="analysis" class="tab-content">
+    <h2>Analysis</h2>
+    <div class="analysis-section">
+      <h3>Top 10 Wallets by Perc Power</h3>
+      <table class="analysis-table" id="top-wallets-table">
         <thead>
           <tr>
+            <th>Rank</th>
             <th>Wallet Address</th>
-            <th>Number of PERCs</th>
-            <th>PERCs by Tier</th>
-            <th>Purchased</th>
-            <th>Sold</th>
-            <th>Transferred</th>
-            <th>Unique Wallets Transferred To</th>
+            <th>Perc Power</th>
           </tr>
         </thead>
-        <tbody id="wallet-table-body">
-          <!-- Populated by script.js -->
-        </tbody>
+        <tbody id="top-wallets-body"></tbody>
       </table>
-    
-      <!-- User Metrics Dashboard -->
-      <h2>User Metrics</h2>
-      <div id="user-metrics">
-        <h3>NFT (Solana)</h3>
-        <p id="nft-data">Select a wallet to view NFT data</p>
-        <h3>Solana Crypto</h3>
-        <p id="crypto-data">Select a wallet to view crypto data</p>
-        <h3>EVM (Bridged)</h3>
-        <p id="evm-data">Select a wallet to view EVM data</p>
-        <h3>Personal</h3>
-        <p id="personal-data">Select a wallet to view personal data</p>
-      </div>
-    
-      <!-- Admin Panel -->
-      <h2>Admin Panel</h2>
-      <div id="admin-panel">
-        <input type="text" id="wallet-input" placeholder="Enter wallet address or @TelegramID">
-        <button onclick="flagWallet()">Flag Wallet</button>
-        <button onclick="assignSocialMedia()">Assign Social Media</button>
-        <button onclick="downloadData()">Download Data</button>
-        <button onclick="refreshData()">Refresh Data</button>
-      </div>
-    
-      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-      <script src="script.js"></script>
-    </body>
-    </html>
+    </div>
+    <div class="analysis-section">
+      <h3>Top 10 Forgers</h3>
+      <table class="analysis-table" id="top-forgers-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Wallet Address</th>
+            <th>Forgings</th>
+          </tr>
+        </thead>
+        <tbody id="top-forgers-body"></tbody>
+      </table>
+    </div>
+    <div class="analysis-section">
+      <h3>Tier Count</h3>
+      <table class="analysis-table" id="tier-count-table">
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Count</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody id="tier-count-body"></tbody>
+      </table>
+    </div>
+    <p id="total-wallets">Total Wallets: 0</p>
+  </div>
+
+  <div id="raw-data" class="tab-content">
+    <h2>Raw Data</h2>
+    <div class="pagination">
+      <button onclick="changeRawDataPage(-100)">-100</button>
+      <button onclick="changeRawDataPage(-10)">-10</button>
+      <button onclick="changeRawDataPage(-1)">-</button>
+      <span id="raw-page-info">Page 1</span>
+      <button onclick="changeRawDataPage(1)">+</button>
+      <button onclick="changeRawDataPage(10)">+10</button>
+      <button onclick="changeRawDataPage(100)">+100</button>
+    </div>
+    <table id="raw-data-table">
+      <thead>
+        <tr>
+          <th>ID#</th>
+          <th>Name</th>
+          <th>NFT ID</th>
+          <th>Traits</th>
+          <th>JSON URI</th>
+          <th>Owner</th>
+          <th>Burned</th>
+          <th>Metadata</th>
+        </tr>
+      </thead>
+      <tbody id="raw-data-table-body"></tbody>
+    </table>
+    <p id="raw-data-count">Total NFTs: 0</p>
+  </div>
+
+  <div id="atlas" class="tab-content">
+    <h2>Texture Atlas</h2>
+    <div class="pagination">
+      <button id="atlas-prev" onclick="changeMasterAtlasPage(-1)">-</button>
+      <span id="atlas-page-info">Atlas 1</span>
+      <button id="atlas-next" onclick="changeMasterAtlasPage(1)">+</button>
+      <span style="margin-left: 10px;">Master (1024x1024px tiles)</span>
+    </div>
+    <p><img id="atlasMaster" class="atlas-image" src="" alt="Master Atlas"></p>
+    <div class="pagination">
+      <button id="thumb-prev" onclick="changeThumbAtlasPage(-1)">-</button>
+      <span id="thumb-page-info">Thumb 1</span>
+      <button id="thumb-next" onclick="changeThumbAtlasPage(1)">+</button>
+      <span style="margin-left: 10px;">Thumbnail Atlas 100x100px tiles</span>
+    </div>
+    <p><img id="atlasThumb" class="atlas-image" src="" alt="Thumbnail Atlas"></p>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <img id="modalImage" src="" alt="NFT Image">
+  </div>
+  <div id="metadataModal" class="metadata-modal">
+    <span id="metadataModalClose" class="metadata-modal-close">×</span>
+    <pre id="metadataModalContent" class="metadata-modal-content"></pre>
+  </div>
+
+  <script type="text/javascript" src="/data.js"></script>
+  <script type="text/javascript" src="/ui.js"></script>
+</body>
+</html>

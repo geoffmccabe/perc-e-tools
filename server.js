@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config({ path: './config.env' });
+
 console.log('[SERVER] Starting server.js...');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -819,6 +822,7 @@ app.get('/api/health', (req, res) => {
 
 console.log('[SERVER] Starting Express server...');
 app.listen(port, () => {
+  require('./cron-jobs/wax.js');
   console.log(`[SERVER] Server running at http://localhost:${port}`);
 });
 
